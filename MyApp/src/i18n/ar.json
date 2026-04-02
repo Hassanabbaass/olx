@@ -1,0 +1,72 @@
+{
+  "common": {
+    "seeAll": "عرض الكل",
+    "viewMore": "عرض المزيد",
+    "clearAll": "مسح الكل",
+    "apply": "تطبيق",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "change": "تغيير",
+    "any": "الكل",
+    "new": "جديد",
+    "used": "مستعمل",
+    "available": "متاح",
+    "retry": "إعادة المحاولة",
+    "loading": "جار التحميل...",
+    "noResults": "لا توجد نتائج",
+    "noResultsDesc": "حاول تعديل بحثك أو الفلاتر",
+    "networkError": "خطأ في الاتصال. يرجى التحقق من الإنترنت.",
+    "currency": "USD"
+  },
+  "home": {
+    "searchPlaceholder": "ماذا تبحث عن؟",
+    "browseCategories": "تصفح الفئات",
+    "featuredAds": "إعلانات مميزة",
+    "carsForSale": "سيارات للبيع",
+    "internationalProperties": "عقارات دولية",
+    "recentAds": "أحدث الإعلانات"
+  },
+  "search": {
+    "searchPlaceholder": "ماذا تبحث عن؟",
+    "showing": "عرض {{count}} نتيجة لـ {{query}}",
+    "showingCategory": "عرض {{count}} نتيجة لـ {{category}}",
+    "sortBy": "ترتيب حسب",
+    "sortNewest": "الأحدث أولاً",
+    "sortPriceAsc": "السعر: من الأقل إلى الأعلى",
+    "sortPriceDesc": "السعر: من الأعلى إلى الأقل",
+    "eliteAds": "الإعلانات المميزة",
+    "allCountry": "كل البلاد",
+    "filters": "فلاتر",
+    "chat": "محادثة",
+    "call": "اتصال",
+    "daysAgo": "منذ {{count}} أيام",
+    "hoursAgo": "منذ {{count}} ساعات",
+    "justNow": "الآن"
+  },
+  "filters": {
+    "title": "الفلاتر",
+    "category": "الفئة",
+    "location": "الموقع",
+    "highlights": "المميزات",
+    "brand": "الماركة",
+    "paymentOptions": "خيارات الدفع",
+    "price": "السعر",
+    "priceMin": "الحد الأدنى",
+    "priceMax": "الحد الأقصى",
+    "condition": "الحالة",
+    "kilometers": "الكيلومترات",
+    "seeResults": "عرض {{count}} نتيجة",
+    "lebanon": "لبنان"
+  },
+  "tabs": {
+    "home": "الرئيسية",
+    "chats": "المحادثات",
+    "sell": "بيع",
+    "myAds": "إعلاناتي",
+    "account": "حسابي"
+  },
+  "language": {
+    "switchTo": "English",
+    "current": "العربية"
+  }
+}

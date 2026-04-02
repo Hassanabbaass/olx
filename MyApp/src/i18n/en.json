@@ -1,0 +1,72 @@
+{
+  "common": {
+    "seeAll": "See all",
+    "viewMore": "View more",
+    "clearAll": "Clear all",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "close": "Close",
+    "change": "Change",
+    "any": "Any",
+    "new": "New",
+    "used": "Used",
+    "available": "Available",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "noResultsDesc": "Try adjusting your search or filters",
+    "networkError": "Connection error. Please check your internet.",
+    "currency": "USD"
+  },
+  "home": {
+    "searchPlaceholder": "What are you looking for?",
+    "browseCategories": "Browse Categories",
+    "featuredAds": "Featured Ads",
+    "carsForSale": "Cars for Sale",
+    "internationalProperties": "International Properties",
+    "recentAds": "Recent Ads"
+  },
+  "search": {
+    "searchPlaceholder": "What are you looking for?",
+    "showing": "Showing {{count}} Results for {{query}}",
+    "showingCategory": "Showing {{count}} Results for {{category}}",
+    "sortBy": "Sort by",
+    "sortNewest": "Newest first",
+    "sortPriceAsc": "Price: Low to High",
+    "sortPriceDesc": "Price: High to Low",
+    "eliteAds": "Elite Ads",
+    "allCountry": "All country",
+    "filters": "Filters",
+    "chat": "Chat",
+    "call": "Call",
+    "daysAgo": "{{count}} days ago",
+    "hoursAgo": "{{count}} hours ago",
+    "justNow": "Just now"
+  },
+  "filters": {
+    "title": "Filters",
+    "category": "Category",
+    "location": "Location",
+    "highlights": "Highlights",
+    "brand": "Brand",
+    "paymentOptions": "Payment Options",
+    "price": "Price",
+    "priceMin": "Min",
+    "priceMax": "Max",
+    "condition": "Condition",
+    "kilometers": "Kilometers",
+    "seeResults": "See {{count}} Results",
+    "lebanon": "Lebanon"
+  },
+  "tabs": {
+    "home": "HOME",
+    "chats": "CHATS",
+    "sell": "SELL",
+    "myAds": "MY ADS",
+    "account": "ACCOUNT"
+  },
+  "language": {
+    "switchTo": "العربية",
+    "current": "English"
+  }
+}
