@@ -35,8 +35,10 @@ const useFetchAds = (): UseFetchAdsResult => {
 
   const search = useCallback(async (filters: SearchFilters) => {
     if (isFetching.current) {
+      console.log('[useFetchAds] search skipped — already fetching');
       return;
     }
+    console.log('[useFetchAds] search() called, filters:', JSON.stringify(filters));
     isFetching.current = true;
     currentFilters.current = filters;
     currentFrom.current = 0;
@@ -48,10 +50,12 @@ const useFetchAds = (): UseFetchAdsResult => {
 
     try {
       const result: FetchAdsResult = await fetchAds(0, PAGE_SIZE, filters);
+      console.log('[useFetchAds] search() done — total:', result.total, 'ads received:', result.ads.length);
       setAds(result.ads);
       setTotal(result.total);
       currentFrom.current = PAGE_SIZE;
-    } catch {
+    } catch (err) {
+      console.error('[useFetchAds] search() error:', err);
       setError('Failed to load ads. Please check your connection.');
     } finally {
       setIsLoading(false);

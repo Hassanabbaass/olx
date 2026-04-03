@@ -95,6 +95,7 @@ export interface Ad {
 export interface SearchFilters {
   categoryID?: string;
   locationID?: string;
+  locationName?: string;
   priceMin?: number;
   priceMax?: number;
   condition?: 'any' | 'new' | 'used';

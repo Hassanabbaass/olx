@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { Ad } from '../types';
 import { colors, typography, spacing } from '../theme';
 import { formatPrice, formatTimestamp, truncate } from '../utils/formatters';
@@ -54,11 +55,12 @@ const AdCard: React.FC<AdCardProps> = ({
   onPress,
   onFavoritePress,
 }) => {
+  const { t } = useTranslation();
   const [isFav, setIsFav] = useState(ad.isFavorite ?? false);
 
   const imageUri = ad.images?.[0]?.thumbnail || ad.images?.[0]?.url || null;
   const price = formatPrice(ad.price, ad.currency);
-  const time = formatTimestamp(ad.timestamp);
+  const time = formatTimestamp(ad.timestamp, t);
 
   const handleFav = () => {
     setIsFav(prev => !prev);
@@ -128,7 +130,7 @@ const AdCard: React.FC<AdCardProps> = ({
           {ad.title}
         </Text>
         <Text style={styles.meta}>
-          {ad.location.name} · {time}
+          {typeof ad.location.name === 'string' ? ad.location.name : ''} · {time}
         </Text>
       </View>
     </TouchableOpacity>

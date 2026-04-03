@@ -41,7 +41,9 @@
     "call": "Call",
     "daysAgo": "{{count}} days ago",
     "hoursAgo": "{{count}} hours ago",
-    "justNow": "Just now"
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minutes ago",
+    "monthsAgo": "{{count}} months ago"
   },
   "filters": {
     "title": "Filters",

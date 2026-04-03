@@ -159,12 +159,6 @@ const HomeScreen: React.FC = () => {
         <View style={styles.sectionBlock}>
           <View style={styles.sectionTitleRow}>
             <Text style={styles.sectionTitle}>{t('home.browseCategories')}</Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('SearchResults', { filters: {} })}
-              hitSlop={8}
-            >
-              <Text style={styles.seeAllText}>{t('common.seeAll')}</Text>
-            </TouchableOpacity>
           </View>
           <CategoriesRow
             categories={categories}

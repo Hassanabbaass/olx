@@ -41,7 +41,9 @@
     "call": "اتصال",
     "daysAgo": "منذ {{count}} أيام",
     "hoursAgo": "منذ {{count}} ساعات",
-    "justNow": "الآن"
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقائق",
+    "monthsAgo": "منذ {{count}} أشهر"
   },
   "filters": {
     "title": "الفلاتر",

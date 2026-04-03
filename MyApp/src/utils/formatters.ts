@@ -1,3 +1,5 @@
+type TFunc = (key: string, options?: object) => string;
+
 /**
  * Formats a price value with currency.
  * e.g. formatPrice(18850, 'USD') → 'USD 18,850'
@@ -12,30 +14,39 @@ export const formatPrice = (price?: number, currency?: string): string => {
 
 /**
  * Returns a human-readable relative time string from a Unix timestamp.
- * Handles both seconds and milliseconds automatically.
+ * Pass a `t` function from useTranslation() to get localised output.
+ * Falls back to English strings when `t` is not provided.
  */
-export const formatTimestamp = (timestamp: number): string => {
-  // Normalize: if timestamp looks like milliseconds (> year 2100 in seconds), divide by 1000
+export const formatTimestamp = (timestamp: number, t?: TFunc): string => {
+  // Normalise: if timestamp looks like milliseconds (> year 2100 in seconds), divide by 1000
   const ts = timestamp > 9_999_999_999 ? timestamp / 1000 : timestamp;
   const diffSeconds = Math.floor(Date.now() / 1000 - ts);
 
   if (diffSeconds < 60) {
-    return 'Just now';
+    return t ? t('search.justNow') : 'Just now';
   }
   if (diffSeconds < 3600) {
     const minutes = Math.floor(diffSeconds / 60);
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    return t
+      ? t('search.minutesAgo', { count: minutes })
+      : `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
   }
   if (diffSeconds < 86400) {
     const hours = Math.floor(diffSeconds / 3600);
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    return t
+      ? t('search.hoursAgo', { count: hours })
+      : `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
   }
   if (diffSeconds < 2592000) {
     const days = Math.floor(diffSeconds / 86400);
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    return t
+      ? t('search.daysAgo', { count: days })
+      : `${days} ${days === 1 ? 'day' : 'days'} ago`;
   }
   const months = Math.floor(diffSeconds / 2592000);
-  return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+  return t
+    ? t('search.monthsAgo', { count: months })
+    : `${months} ${months === 1 ? 'month' : 'months'} ago`;
 };
 
 /**

@@ -11,7 +11,9 @@ const LOCATIONS_INDEX = 'olx-lb-production-locations-en';
 interface RawAdPhoto {
   url?: string;
   thumbnail?: string;
-  id?: string;
+  id?: string | number;
+  externalID?: string;
+  orderIndex?: number;
 }
 
 // Actual _source shape from olx-lb-production-ads-en Elasticsearch index
@@ -69,14 +71,40 @@ interface RawLocationSource {
 
 // ─── Normalizers ──────────────────────────────────────────────────────────────
 
-// Extracts a plain string URL from whatever the API returns (string or object)
+// OLX Lebanon image CDN: https://images.olx.com.lb/thumbnails/{id}-{size}.webp
+const buildOlxImageUrl = (id: string | number, size = '600x450'): string =>
+  `https://images.olx.com.lb/thumbnails/${id}-${size}.webp`;
+
+// Extracts a plain string URL from whatever the API returns (string or object).
+// OLX Elasticsearch photos have no direct `url` — the URL is built from the numeric `id`.
 const extractUrl = (val: unknown): string => {
   if (!val) { return ''; }
   if (typeof val === 'string') { return val; }
   if (typeof val === 'object') {
     const v = val as Record<string, unknown>;
-    const u = v.url ?? v.thumbnail ?? v.src ?? v.path ?? '';
-    return typeof u === 'string' ? u : '';
+    const direct = v.url ?? v.thumbnail ?? v.src ?? v.path ?? '';
+    if (typeof direct === 'string' && direct) { return direct; }
+    // OLX stores photos as {id, externalID, orderIndex, ...} without a pre-built URL
+    if (v.id !== undefined && v.id !== null) {
+      return buildOlxImageUrl(v.id as string | number);
+    }
+  }
+  return '';
+};
+
+/**
+ * Safely coerces a value that may be a string OR a nested OLX location/category
+ * object (with keys: id, level, externalID, name, name_l1, slug, slug_l1) into a
+ * plain string. Elasticsearch lvl0/lvl1 fields are sometimes indexed as full
+ * objects rather than path strings.
+ */
+const extractString = (val: unknown): string => {
+  if (!val) { return ''; }
+  if (typeof val === 'string') { return val; }
+  if (typeof val === 'object') {
+    const obj = val as Record<string, unknown>;
+    const name = obj.name;
+    return typeof name === 'string' ? name : '';
   }
   return '';
 };
@@ -102,7 +130,10 @@ const normalizeAd = (hit: RawHit): Ad => {
   const locObj = typeof s.location === 'object' ? s.location : null;
   const location: AdLocation = {
     externalID: locObj?.externalID ?? '',
-    name: locObj?.name ?? (s as any)['location.lvl1'] ?? (s as any)['location.lvl0'] ?? '',
+    name:
+      extractString(locObj?.name) ||
+      extractString((s as any)['location.lvl1']) ||
+      extractString((s as any)['location.lvl0']),
     nameAr: locObj?.name_l1,
   };
 
@@ -110,7 +141,10 @@ const normalizeAd = (hit: RawHit): Ad => {
   const catObj = typeof s.category === 'object' ? s.category : null;
   const category: AdCategory = {
     externalID: catObj?.externalID ?? '',
-    name: catObj?.name ?? (s as any)['category.lvl1'] ?? (s as any)['category.lvl0'] ?? '',
+    name:
+      extractString(catObj?.name) ||
+      extractString((s as any)['category.lvl1']) ||
+      extractString((s as any)['category.lvl0']),
     nameAr: catObj?.name_l1,
   };
 
@@ -269,14 +303,18 @@ export const fetchAds = async (
   const query = buildAdsQuery(from, size, filters);
   const body = buildNdjson(ADS_INDEX, query);
 
+  console.log('[fetchAds] filters:', JSON.stringify(filters));
+  console.log('[fetchAds] NDJSON body sent:\n', body);
+
   const response = await searchApi.post<MsearchResponse>(
-    '/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.error',
+    '/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source%2C*.hits.hits._score%2C*.hits.hits._id%2C*.error',
     body,
     { headers: { 'Content-Type': 'application/x-ndjson' } },
   );
 
   const result = response.data.responses?.[0];
   if (!result) {
+    console.warn('[fetchAds] No response in responses[]');
     return { ads: [], total: 0 };
   }
 
@@ -287,6 +325,7 @@ export const fetchAds = async (
 
   // hits.hits can be undefined when filter_path strips empty arrays
   const ads = (result.hits.hits ?? []).map(normalizeAd);
+  console.log(`[fetchAds] total=${total}, returned=${ads.length} ads, first id=${ads[0]?.id ?? 'none'}`);
   return { ads, total };
 };
 
@@ -297,7 +336,7 @@ export const fetchAdsCount = async (filters: SearchFilters): Promise<number> => 
   const query = buildAdsQuery(0, 0, filters);
   const body = buildNdjson(ADS_INDEX, query);
 
-  const response = await searchApi.post<MsearchResponse>('/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.error', body, {
+  const response = await searchApi.post<MsearchResponse>('/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.hits.hits._id%2C*.error', body, {
     headers: { 'Content-Type': 'application/x-ndjson' },
   });
 
@@ -336,7 +375,7 @@ export const fetchLocations = async (
 
   const body = buildNdjson(LOCATIONS_INDEX, query);
 
-  const response = await searchApi.post<MsearchResponse>('/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.error', body, {
+  const response = await searchApi.post<MsearchResponse>('/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.hits.hits._id%2C*.error', body, {
     headers: { 'Content-Type': 'application/x-ndjson' },
   });
 
