@@ -98,7 +98,6 @@ export interface SearchFilters {
   locationName?: string;
   priceMin?: number;
   priceMax?: number;
-  condition?: 'any' | 'new' | 'used';
   keyword?: string;
   dynamicFields?: Record<string, string | string[] | number[]>;
   sortBy?: 'newest' | 'price_asc' | 'price_desc';

@@ -82,8 +82,6 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
   useEffect(() => {
     const newFilters = route.params?.filters ?? {};
     const newQuery = route.params?.query ?? '';
-    console.log('[SearchResults] route params changed:', JSON.stringify(route.params));
-    console.log('[SearchResults] searching with filters:', JSON.stringify(newFilters), '| keyword:', newQuery || newFilters.keyword || '(none)');
     setFilters(newFilters);
     setQuery(newQuery);
     search({ ...newFilters, keyword: newQuery || newFilters.keyword });
@@ -110,7 +108,6 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 
   const handleQuerySubmit = useCallback(() => {
-    console.log('[SearchResults] query submitted:', query);
     search({ ...filters, keyword: query });
   }, [search, filters, query]);
 

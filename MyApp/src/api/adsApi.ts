@@ -41,7 +41,8 @@ interface RawAdSource {
   isFeatured?: boolean;
   contactPhone?: string;
   contactInfo?: { phone?: string };
-  extraFields?: Array<{ key: string; value: string | number }>;
+  // extraFields is a plain object (not array) keyed by attribute name
+  extraFields?: Record<string, string | number>;
   formattedExtraFields?: Array<{ key: string; value: string | number }>;
 }
 
@@ -149,12 +150,14 @@ const normalizeAd = (hit: RawHit): Ad => {
   };
 
   // ── Price ───────────────────────────────────────────────────────────────────
-  // price is a flat number; 0 means no price set → show "Price on request"
-  const priceNum = typeof s.price === 'number' ? s.price : undefined;
+  // Top-level `price` is always 0 in OLX's index.
+  // The real price lives in extraFields.price (plain object keyed by attribute).
+  const extraFieldsObj = s.extraFields ?? {};
+  const realPrice = typeof extraFieldsObj.price === 'number' ? extraFieldsObj.price : undefined;
 
-  // ── Specs from extraFields ──────────────────────────────────────────────────
+  // ── Specs from formattedExtraFields (array) ─────────────────────────────────
   const specs: Record<string, string | number> = {};
-  (s.formattedExtraFields ?? s.extraFields ?? []).forEach(f => {
+  (s.formattedExtraFields ?? []).forEach((f: { key: string; value: string | number }) => {
     if (f.key && f.value !== undefined) {
       specs[f.key] = f.value;
     }
@@ -165,7 +168,7 @@ const normalizeAd = (hit: RawHit): Ad => {
     title: s.title ?? '',
     titleAr: s.title_l1,
     description: s.description,
-    price: priceNum && priceNum > 0 ? priceNum : undefined,
+    price: realPrice && realPrice > 0 ? realPrice : undefined,
     currency: s.currency ?? 'USD',
     images,
     location,
@@ -220,69 +223,60 @@ const buildAdsQuery = (
     must.push({
       multi_match: {
         query: filters.keyword,
-        fields: ['title', 'title_ar', 'description'],
+        fields: ['title', 'title_l1', 'description'],
         type: 'best_fields',
         fuzziness: 'AUTO',
       },
     });
   }
 
-  if (filters.condition && filters.condition !== 'any') {
-    must.push({ term: { 'params.condition.value': filters.condition } });
-  }
-
-  // Dynamic fields (from categoryFields API: color, brand, kilometers, etc.)
+  // Dynamic fields from categoryFields API — stored in extraFields plain object
   if (filters.dynamicFields) {
     for (const [key, value] of Object.entries(filters.dynamicFields)) {
-      if (value === undefined || value === null) {
-        continue;
-      }
+      if (value === undefined || value === null) { continue; }
       if (Array.isArray(value)) {
         if (value.length === 2 && typeof value[0] === 'number') {
-          // Range filter [min, max]
-          must.push({ range: { [`params.${key}.value`]: { gte: value[0], lte: value[1] } } });
+          // Range [min, max]
+          must.push({ range: { [`extraFields.${key}`]: { gte: value[0], lte: value[1] } } });
         } else if (value.length > 0) {
-          // Multi-select: match any of the values
-          must.push({ terms: { [`params.${key}.value`]: value } });
+          // Multi-select
+          must.push({ terms: { [`extraFields.${key}`]: value } });
         }
       } else {
-        must.push({ term: { [`params.${key}.value`]: value } });
+        must.push({ term: { [`extraFields.${key}`]: value } });
       }
     }
   }
 
-  // Price range
+  // Price range — real price lives in extraFields.price (top-level `price` is always 0)
   const priceRange: { gte?: number; lte?: number } = {};
-  if (filters.priceMin !== undefined) {
-    priceRange.gte = filters.priceMin;
-  }
-  if (filters.priceMax !== undefined) {
-    priceRange.lte = filters.priceMax;
-  }
+  if (filters.priceMin !== undefined) { priceRange.gte = filters.priceMin; }
+  if (filters.priceMax !== undefined) { priceRange.lte = filters.priceMax; }
   if (Object.keys(priceRange).length > 0) {
-    must.push({ range: { 'price.value': priceRange } });
+    must.push({ range: { 'extraFields.price': priceRange } });
   }
 
   // Sort
   let sort: Record<string, SortOrder>[];
   switch (filters.sortBy) {
     case 'price_asc':
-      sort = [{ 'price.value': { order: 'asc' } }, { id: { order: 'desc' } }];
+      sort = [{ 'extraFields.price': { order: 'asc' } }, { id: { order: 'desc' } }];
       break;
     case 'price_desc':
-      sort = [{ 'price.value': { order: 'desc' } }, { id: { order: 'desc' } }];
+      sort = [{ 'extraFields.price': { order: 'desc' } }, { id: { order: 'desc' } }];
       break;
     default:
       sort = [{ timestamp: { order: 'desc' } }, { id: { order: 'desc' } }];
   }
 
-  return {
+  const builtQuery = {
     from,
     size,
     track_total_hits: 200000,
     query: { bool: { must: must.length > 0 ? must : [{ match_all: {} }] } },
     sort,
   };
+  return builtQuery;
 };
 
 // ─── API Calls ────────────────────────────────────────────────────────────────
@@ -303,9 +297,6 @@ export const fetchAds = async (
   const query = buildAdsQuery(from, size, filters);
   const body = buildNdjson(ADS_INDEX, query);
 
-  console.log('[fetchAds] filters:', JSON.stringify(filters));
-  console.log('[fetchAds] NDJSON body sent:\n', body);
-
   const response = await searchApi.post<MsearchResponse>(
     '/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source%2C*.hits.hits._score%2C*.hits.hits._id%2C*.error',
     body,
@@ -324,8 +315,8 @@ export const fetchAds = async (
       : result.hits.total?.value ?? 0;
 
   // hits.hits can be undefined when filter_path strips empty arrays
-  const ads = (result.hits.hits ?? []).map(normalizeAd);
-  console.log(`[fetchAds] total=${total}, returned=${ads.length} ads, first id=${ads[0]?.id ?? 'none'}`);
+  const rawHits = result.hits.hits ?? [];
+  const ads = rawHits.map(normalizeAd);
   return { ads, total };
 };
 
