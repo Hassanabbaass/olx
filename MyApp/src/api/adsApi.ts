@@ -8,45 +8,39 @@ const LOCATIONS_INDEX = 'olx-lb-production-locations-en';
 
 // ─── Raw API shapes ───────────────────────────────────────────────────────────
 
-interface RawAdMedia {
+interface RawAdPhoto {
   url?: string;
   thumbnail?: string;
   id?: string;
 }
 
-interface RawAdPrice {
-  value?: number;
-  currency?: string;
-}
-
-interface RawAdLocation {
-  externalID?: string;
-  name?: string;
-  nameAr?: string;
-  city?: string;
-  country?: string;
-}
-
-interface RawAdCategory {
-  externalID?: string;
-  name?: string;
-  nameAr?: string;
-}
-
+// Actual _source shape from olx-lb-production-ads-en Elasticsearch index
 interface RawAdSource {
-  id: string;
+  id?: number | string;
   title?: string;
-  titleAr?: string;
+  title_l1?: string;       // Arabic title
   description?: string;
-  price?: RawAdPrice;
-  media?: RawAdMedia[];
-  location?: RawAdLocation;
-  category?: RawAdCategory;
+  description_l1?: string;
+  price?: number;           // flat number — 0 means no price listed
+  currency?: string;
+  coverPhoto?: string;      // main image URL (string)
+  photos?: RawAdPhoto[];    // additional photos array
+  media?: RawAdPhoto[];     // legacy fallback
+  // Location stored as flat dotted fields
+  location?: { externalID?: string; name?: string; name_l1?: string } | string;
+  'location.lvl0'?: string;
+  'location.lvl1'?: string;
+  // Category stored as flat dotted fields
+  category?: { externalID?: string; name?: string; name_l1?: string } | string;
+  'category.lvl0'?: string;
+  'category.lvl1'?: string;
   timestamp?: number;
   isElite?: boolean;
   isFeatured?: boolean;
   contactPhone?: string;
-  params?: Record<string, { value: string | number; key: string; label?: string }>;
+  contactInfo?: { phone?: string };
+  extraFields?: Array<{ key: string; value: string | number }>;
+  formattedExtraFields?: Array<{ key: string; value: string | number }>;
 }
 
 interface RawHit {
@@ -75,46 +69,70 @@ interface RawLocationSource {
 
 // ─── Normalizers ──────────────────────────────────────────────────────────────
 
+// Extracts a plain string URL from whatever the API returns (string or object)
+const extractUrl = (val: unknown): string => {
+  if (!val) { return ''; }
+  if (typeof val === 'string') { return val; }
+  if (typeof val === 'object') {
+    const v = val as Record<string, unknown>;
+    const u = v.url ?? v.thumbnail ?? v.src ?? v.path ?? '';
+    return typeof u === 'string' ? u : '';
+  }
+  return '';
+};
+
 const normalizeAd = (hit: RawHit): Ad => {
   const s = hit._source;
 
-  const images: AdImage[] = (s.media ?? []).map((m, idx) => ({
-    id: m.id ?? String(idx),
-    url: m.url ?? '',
-    thumbnail: m.thumbnail ?? m.url ?? '',
-  }));
-
-  const location: AdLocation = {
-    externalID: s.location?.externalID ?? '',
-    name: s.location?.name ?? '',
-    nameAr: s.location?.nameAr,
-    city: s.location?.city,
-    country: s.location?.country,
-  };
-
-  const category: AdCategory = {
-    externalID: s.category?.externalID ?? '',
-    name: s.category?.name ?? '',
-    nameAr: s.category?.nameAr,
-  };
-
-  // Flatten params into specs map
-  const specs: Record<string, string | number> = {};
-  if (s.params) {
-    for (const param of Object.values(s.params)) {
-      if (param.key && param.value !== undefined) {
-        specs[param.key] = param.value;
-      }
-    }
+  // ── Images ─────────────────────────────────────────────────────────────────
+  const images: AdImage[] = [];
+  const coverUrl = extractUrl(s.coverPhoto);
+  if (coverUrl) {
+    images.push({ id: '0', url: coverUrl, thumbnail: coverUrl });
   }
+  const photoArray = s.photos ?? s.media ?? [];
+  photoArray.forEach((p, idx) => {
+    const url = extractUrl(p.url);
+    if (url && url !== coverUrl) {
+      images.push({ id: p.id ?? String(idx + 1), url, thumbnail: extractUrl(p.thumbnail) || url });
+    }
+  });
+
+  // ── Location ────────────────────────────────────────────────────────────────
+  const locObj = typeof s.location === 'object' ? s.location : null;
+  const location: AdLocation = {
+    externalID: locObj?.externalID ?? '',
+    name: locObj?.name ?? (s as any)['location.lvl1'] ?? (s as any)['location.lvl0'] ?? '',
+    nameAr: locObj?.name_l1,
+  };
+
+  // ── Category ────────────────────────────────────────────────────────────────
+  const catObj = typeof s.category === 'object' ? s.category : null;
+  const category: AdCategory = {
+    externalID: catObj?.externalID ?? '',
+    name: catObj?.name ?? (s as any)['category.lvl1'] ?? (s as any)['category.lvl0'] ?? '',
+    nameAr: catObj?.name_l1,
+  };
+
+  // ── Price ───────────────────────────────────────────────────────────────────
+  // price is a flat number; 0 means no price set → show "Price on request"
+  const priceNum = typeof s.price === 'number' ? s.price : undefined;
+
+  // ── Specs from extraFields ──────────────────────────────────────────────────
+  const specs: Record<string, string | number> = {};
+  (s.formattedExtraFields ?? s.extraFields ?? []).forEach(f => {
+    if (f.key && f.value !== undefined) {
+      specs[f.key] = f.value;
+    }
+  });
 
   return {
-    id: s.id ?? hit._id,
+    id: String(s.id ?? hit._id),
     title: s.title ?? '',
-    titleAr: s.titleAr,
+    titleAr: s.title_l1,
     description: s.description,
-    price: s.price?.value,
-    currency: s.price?.currency ?? 'USD',
+    price: priceNum && priceNum > 0 ? priceNum : undefined,
+    currency: s.currency ?? 'USD',
     images,
     location,
     category,
@@ -123,7 +141,7 @@ const normalizeAd = (hit: RawHit): Ad => {
     isFeatured: s.isFeatured ?? false,
     isFavorite: false,
     specs,
-    contactPhone: s.contactPhone,
+    contactPhone: s.contactPhone ?? s.contactInfo?.phone,
   };
 };
 
@@ -251,9 +269,11 @@ export const fetchAds = async (
   const query = buildAdsQuery(from, size, filters);
   const body = buildNdjson(ADS_INDEX, query);
 
-  const response = await searchApi.post<MsearchResponse>('/_msearch', body, {
-    headers: { 'Content-Type': 'application/x-ndjson' },
-  });
+  const response = await searchApi.post<MsearchResponse>(
+    '/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.error',
+    body,
+    { headers: { 'Content-Type': 'application/x-ndjson' } },
+  );
 
   const result = response.data.responses?.[0];
   if (!result) {
@@ -265,7 +285,8 @@ export const fetchAds = async (
       ? result.hits.total
       : result.hits.total?.value ?? 0;
 
-  const ads = result.hits.hits.map(normalizeAd);
+  // hits.hits can be undefined when filter_path strips empty arrays
+  const ads = (result.hits.hits ?? []).map(normalizeAd);
   return { ads, total };
 };
 
@@ -276,7 +297,7 @@ export const fetchAdsCount = async (filters: SearchFilters): Promise<number> => 
   const query = buildAdsQuery(0, 0, filters);
   const body = buildNdjson(ADS_INDEX, query);
 
-  const response = await searchApi.post<MsearchResponse>('/_msearch', body, {
+  const response = await searchApi.post<MsearchResponse>('/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.error', body, {
     headers: { 'Content-Type': 'application/x-ndjson' },
   });
 
@@ -315,7 +336,7 @@ export const fetchLocations = async (
 
   const body = buildNdjson(LOCATIONS_INDEX, query);
 
-  const response = await searchApi.post<MsearchResponse>('/_msearch', body, {
+  const response = await searchApi.post<MsearchResponse>('/_msearch?filter_path=took%2C*.took%2C*.timed_out%2C*.hits.total.*%2C*.hits.hits._source.*%2C*.hits.hits._score%2C*.error', body, {
     headers: { 'Content-Type': 'application/x-ndjson' },
   });
 
@@ -324,7 +345,7 @@ export const fetchLocations = async (
     return [];
   }
 
-  return result.hits.hits.map(hit =>
+  return (result.hits.hits ?? []).map(hit =>
     normalizeLocation(hit as unknown as { _source: RawLocationSource }),
   );
 };

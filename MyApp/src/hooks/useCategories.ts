@@ -26,13 +26,12 @@ const useCategories = (): UseCategoriesResult => {
     setIsLoading(true);
     setError(null);
     try {
-      const [cats, fieldsMap] = await Promise.all([
-        fetchCategories(),
-        fetchCategoryFields(),
-      ]);
+      // Fetch categories first — needed to map internal IDs → externalIDs for fields
+      const cats = await fetchCategories();
+      const fieldsMap = await fetchCategoryFields(cats);
       setCategories(cats);
       setCategoryFieldsMap(fieldsMap);
-    } catch (err) {
+    } catch (err: any) {
       setError('Failed to load categories. Please try again.');
     } finally {
       setIsLoading(false);
