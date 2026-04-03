@@ -305,7 +305,6 @@ export const fetchAds = async (
 
   const result = response.data.responses?.[0];
   if (!result) {
-    console.warn('[fetchAds] No response in responses[]');
     return { ads: [], total: 0 };
   }
 

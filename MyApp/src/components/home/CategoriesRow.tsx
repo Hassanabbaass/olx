@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import { Category } from '../../types';
 import { colors, typography, spacing } from '../../theme';
+import { CategorySkeleton } from '../Skeleton';
 
 // ─── Category Item ────────────────────────────────────────────────────────────
 
@@ -62,8 +62,8 @@ const CategoriesRow: React.FC<CategoriesRowProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <View style={styles.loadingWrapper}>
-        <ActivityIndicator size="small" color={colors.primary} />
+      <View style={styles.skeletonRow}>
+        {[1, 2, 3, 4, 5].map(i => <CategorySkeleton key={i} />)}
       </View>
     );
   }
@@ -129,10 +129,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: typography.lineHeights.tight,
   },
-  loadingWrapper: {
-    height: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
+  skeletonRow: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.base,
+    paddingVertical: spacing.sm,
   },
 });
 

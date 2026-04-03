@@ -5,11 +5,12 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ad } from '../../types';
 import { colors, typography, spacing } from '../../theme';
 import AdCard from '../AdCard';
+import { HorizontalCardSkeleton } from '../Skeleton';
 
 interface AdSectionRowProps {
   title: string;
@@ -26,6 +27,7 @@ const AdSectionRow: React.FC<AdSectionRowProps> = ({
   onSeeAll,
   onAdPress,
 }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       {/* Section Header */}
@@ -33,15 +35,17 @@ const AdSectionRow: React.FC<AdSectionRowProps> = ({
         <Text style={styles.title}>{title}</Text>
         {onSeeAll && (
           <TouchableOpacity onPress={onSeeAll} hitSlop={8}>
-            <Text style={styles.seeAll}>See all</Text>
+            <Text style={styles.seeAll}>{t('common.seeAll')}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* Content */}
       {isLoading ? (
-        <View style={styles.loadingWrapper}>
-          <ActivityIndicator size="small" color={colors.primary} />
+        <View style={styles.skeletonRow}>
+          <HorizontalCardSkeleton />
+          <HorizontalCardSkeleton />
+          <HorizontalCardSkeleton />
         </View>
       ) : ads.length === 0 ? null : (
         <FlatList
@@ -90,10 +94,10 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: spacing.base,
   },
-  loadingWrapper: {
-    height: 150,
-    alignItems: 'center',
-    justifyContent: 'center',
+  skeletonRow: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.base,
+    overflow: 'hidden',
   },
 });
 

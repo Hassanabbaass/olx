@@ -11,7 +11,7 @@ import {
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList, Ad, SearchFilters, Category } from '../types';
@@ -60,6 +60,46 @@ const SortIcon: React.FC = () => (
       stroke={colors.textPrimary}
       strokeWidth={2}
       strokeLinecap="round"
+    />
+  </Svg>
+);
+
+// ─── Empty State Illustration ─────────────────────────────────────────────────
+
+const NoResultsIllustration: React.FC = () => (
+  <Svg width={120} height={120} viewBox="0 0 120 120" fill="none">
+    {/* Magnifying glass body */}
+    <Circle cx="50" cy="50" r="30" stroke={colors.border} strokeWidth={6} />
+    {/* Magnifying glass handle */}
+    <Path
+      d="M73 73L95 95"
+      stroke={colors.border}
+      strokeWidth={7}
+      strokeLinecap="round"
+    />
+    {/* X inside */}
+    <Path
+      d="M40 40L60 60M60 40L40 60"
+      stroke={colors.textMuted}
+      strokeWidth={4}
+      strokeLinecap="round"
+    />
+  </Svg>
+);
+
+const NetworkErrorIllustration: React.FC = () => (
+  <Svg width={120} height={120} viewBox="0 0 120 120" fill="none">
+    {/* Cloud outline */}
+    <Path
+      d="M88 80H32C22 80 14 72 14 62C14 53 20 46 28 44C28 32 37 22 49 22C58 22 66 27 70 35C72 34 74 33 77 33C87 33 95 41 95 51C95 52 95 53 94 54C99 57 103 63 103 70C103 76 96 80 88 80Z"
+      stroke={colors.border}
+      strokeWidth={5}
+      strokeLinecap="round"
+    />
+    {/* Lightning bolt */}
+    <Path
+      d="M63 48L54 65H62L57 82L72 61H64L69 48H63Z"
+      fill={colors.textMuted}
     />
   </Svg>
 );
@@ -199,6 +239,7 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
     if (error) {
       return (
         <View style={styles.centerState}>
+          <NetworkErrorIllustration />
           <Text style={styles.emptyTitle}>{t('common.networkError')}</Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -211,6 +252,7 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
     }
     return (
       <View style={styles.centerState}>
+        <NoResultsIllustration />
         <Text style={styles.emptyTitle}>{t('common.noResults')}</Text>
         <Text style={styles.emptyDesc}>{t('common.noResultsDesc')}</Text>
       </View>
@@ -343,6 +385,7 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.lg,
     fontWeight: typography.fontWeights.semiBold,
     color: colors.textPrimary,
+    marginTop: spacing.lg,
     marginBottom: spacing.sm,
     textAlign: 'center',
   },
