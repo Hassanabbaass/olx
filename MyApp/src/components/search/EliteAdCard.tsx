@@ -65,7 +65,7 @@ const EliteAdCard: React.FC<EliteAdCardProps> = ({ ad, onPress, onFavoritePress 
   const { t } = useTranslation();
 
   const imageUri = ad.images?.[0]?.url || ad.images?.[0]?.thumbnail || null;
-  const price = formatPrice(ad.price, ad.currency);
+  const price = formatPrice(ad.price, ad.currency, t);
   const time = formatTimestamp(ad.timestamp, t);
   const specEntries = Object.entries(ad.specs ?? {}).slice(0, 4);
 
@@ -90,7 +90,7 @@ const EliteAdCard: React.FC<EliteAdCardProps> = ({ ad, onPress, onFavoritePress 
           resizeMode="cover"
         />
         <View style={styles.eliteBadge}>
-          <Text style={styles.eliteBadgeText}>Elite</Text>
+          <Text style={styles.eliteBadgeText}>{t('common.elite')}</Text>
         </View>
         <TouchableOpacity style={styles.favButton} onPress={handleFav} hitSlop={8}>
           <HeartIcon filled={isFav} size={18} />

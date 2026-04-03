@@ -3,8 +3,7 @@ import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nManager } from 'react-native';
 
-import './src/i18n';
-import { getStoredLanguage, Language } from './src/i18n';
+import i18n, { getStoredLanguage, Language } from './src/i18n';
 import { AppProvider } from './src/store/AppContext';
 import RootNavigator from './src/navigation/RootNavigator';
 import { colors } from './src/theme';
@@ -19,6 +18,7 @@ const App: React.FC = () => {
       const rtl = lang === 'ar';
       I18nManager.allowRTL(rtl);
       I18nManager.forceRTL(rtl);
+      await i18n.changeLanguage(lang);
       setInitialLanguage(lang);
       setIsReady(true);
     };

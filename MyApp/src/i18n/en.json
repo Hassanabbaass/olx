@@ -16,7 +16,11 @@
     "noResults": "No results found",
     "noResultsDesc": "Try adjusting your search or filters",
     "networkError": "Connection error. Please check your internet.",
-    "currency": "USD"
+    "currency": "USD",
+    "priceOnRequest": "Price on request",
+    "elite": "Elite",
+    "min": "Min",
+    "max": "Max"
   },
   "home": {
     "searchPlaceholder": "What are you looking for?",
@@ -24,7 +28,13 @@
     "featuredAds": "Featured Ads",
     "carsForSale": "Cars for Sale",
     "internationalProperties": "International Properties",
-    "recentAds": "Recent Ads"
+    "recentAds": "Recent Ads",
+    "banner1Title": "BUY YOUR\nMOBILE\nDIRECTLY",
+    "banner1Cta": "ORDER NOW",
+    "banner2Title": "FIND YOUR\nDREAM\nHOME",
+    "banner2Cta": "EXPLORE",
+    "banner3Title": "BEST DEALS\nON CARS",
+    "banner3Cta": "SHOP NOW"
   },
   "search": {
     "searchPlaceholder": "What are you looking for?",

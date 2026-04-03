@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors, typography, spacing } from '../../theme';
 
 interface Props {
   minValue: number | undefined;
   maxValue: number | undefined;
+  /** Falls back to t('common.min') if not provided */
   minPlaceholder?: string;
+  /** Falls back to t('common.max') if not provided */
   maxPlaceholder?: string;
   /** Called when either bound changes. Both values are undefined when the field is cleared. */
   onChange: (min: number | undefined, max: number | undefined) => void;
@@ -22,12 +25,16 @@ interface Props {
 const RangeInput: React.FC<Props> = ({
   minValue,
   maxValue,
-  minPlaceholder = 'Min',
-  maxPlaceholder = 'Max',
+  minPlaceholder,
+  maxPlaceholder,
   onChange,
   fallbackMax = 999999999,
   fallbackMin = 0,
 }) => {
+  const { t } = useTranslation();
+  const minLabel = minPlaceholder ?? t('common.min');
+  const maxLabel = maxPlaceholder ?? t('common.max');
+
   const handleMinChange = (text: string) => {
     const min = text ? Number(text) : undefined;
     // Only emit a range when at least one bound is set
@@ -51,7 +58,7 @@ const RangeInput: React.FC<Props> = ({
     <View style={styles.row}>
       <TextInput
         style={styles.input}
-        placeholder={minPlaceholder}
+        placeholder={minLabel}
         placeholderTextColor={colors.placeholder}
         keyboardType="numeric"
         value={minValue !== undefined ? String(minValue) : ''}
@@ -60,7 +67,7 @@ const RangeInput: React.FC<Props> = ({
       <View style={styles.separator} />
       <TextInput
         style={styles.input}
-        placeholder={maxPlaceholder}
+        placeholder={maxLabel}
         placeholderTextColor={colors.placeholder}
         keyboardType="numeric"
         value={maxValue !== undefined ? String(maxValue) : ''}

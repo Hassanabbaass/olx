@@ -16,7 +16,11 @@
     "noResults": "لا توجد نتائج",
     "noResultsDesc": "حاول تعديل بحثك أو الفلاتر",
     "networkError": "خطأ في الاتصال. يرجى التحقق من الإنترنت.",
-    "currency": "USD"
+    "currency": "USD",
+    "priceOnRequest": "السعر عند الطلب",
+    "elite": "مميز",
+    "min": "الحد الأدنى",
+    "max": "الحد الأقصى"
   },
   "home": {
     "searchPlaceholder": "ماذا تبحث عن؟",
@@ -24,7 +28,13 @@
     "featuredAds": "إعلانات مميزة",
     "carsForSale": "سيارات للبيع",
     "internationalProperties": "عقارات دولية",
-    "recentAds": "أحدث الإعلانات"
+    "recentAds": "أحدث الإعلانات",
+    "banner1Title": "اشتر\nهاتفك\nمباشرةً",
+    "banner1Cta": "اطلب الآن",
+    "banner2Title": "ابحث عن\nمنزل\nأحلامك",
+    "banner2Cta": "استكشف",
+    "banner3Title": "أفضل\nعروض\nالسيارات",
+    "banner3Cta": "تسوق الآن"
   },
   "search": {
     "searchPlaceholder": "ماذا تبحث عن؟",

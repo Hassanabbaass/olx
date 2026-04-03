@@ -8,6 +8,7 @@ import {
   StyleSheet,
   TextInput,
   StatusBar,
+  I18nManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
@@ -24,15 +25,19 @@ const CloseIcon: React.FC = () => (
 );
 
 const BackIcon: React.FC = () => (
-  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-    <Path d="M15 18l-6-6 6-6" stroke={colors.textPrimary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
+  <View style={I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}>
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+      <Path d="M15 18l-6-6 6-6" stroke={colors.textPrimary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  </View>
 );
 
 const ChevronRight: React.FC = () => (
-  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-    <Path d="M9 18l6-6-6-6" stroke={colors.textSecondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
+  <View style={I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}>
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 18l6-6-6-6" stroke={colors.textSecondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  </View>
 );
 
 const CheckIcon: React.FC = () => (

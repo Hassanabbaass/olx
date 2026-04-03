@@ -23,6 +23,7 @@ import LocationHeader from '../components/home/LocationHeader';
 import BannerCarousel from '../components/home/BannerCarousel';
 import CategoriesRow from '../components/home/CategoriesRow';
 import AdSectionRow from '../components/home/AdSectionRow';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 type HomeNavProp = StackNavigationProp<RootStackParamList>;
 
@@ -123,7 +124,10 @@ const HomeScreen: React.FC = () => {
 
       {/* Sticky Header */}
       <View style={styles.header}>
-        <LocationHeader location="Lebanon" />
+        <View style={styles.headerRow}>
+          <LocationHeader location={t('filters.lebanon')} />
+          <LanguageSwitcher />
+        </View>
         <TouchableOpacity
           style={styles.searchBar}
           onPress={handleSearchPress}
@@ -196,6 +200,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: spacing.base,
   },
   searchBar: {
     flexDirection: 'row',

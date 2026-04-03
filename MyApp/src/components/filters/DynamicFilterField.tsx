@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, I18nManager } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { CategoryField, FieldChoice } from '../../types';
 import { colors, typography, spacing } from '../../theme';
 import ChipGroup from './ChipGroup';
@@ -13,15 +14,17 @@ const CHIP_THRESHOLD = 6;
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 const ChevronRight: React.FC = () => (
-  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M9 18l6-6-6-6"
-      stroke={colors.textSecondary}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
+  <View style={I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}>
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9 18l6-6-6-6"
+        stroke={colors.textSecondary}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  </View>
 );
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -46,6 +49,7 @@ interface Props {
  *   dropdown                → tappable row → OptionPickerModal
  */
 const DynamicFilterField: React.FC<Props> = ({ field, value, onChange }) => {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
 
   // ── Range / Number ──────────────────────────────────────────────────────────
@@ -57,8 +61,8 @@ const DynamicFilterField: React.FC<Props> = ({ field, value, onChange }) => {
         <RangeInput
           minValue={rangeVal?.[0]}
           maxValue={rangeVal?.[1]}
-          minPlaceholder={field.min !== undefined ? String(field.min) : 'Min'}
-          maxPlaceholder={field.max !== undefined ? String(field.max) : 'Max'}
+          minPlaceholder={field.min !== undefined ? String(field.min) : t('common.min')}
+          maxPlaceholder={field.max !== undefined ? String(field.max) : t('common.max')}
           fallbackMin={field.min ?? 0}
           fallbackMax={field.max ?? 999999999}
           onChange={(min, max) => {
@@ -100,7 +104,7 @@ const DynamicFilterField: React.FC<Props> = ({ field, value, onChange }) => {
     return null;
   }
 
-  const displayValue = getDisplayValue(field, value);
+  const displayValue = getDisplayValue(field, value, t('common.any'));
   const isMulti = field.fieldType === 'multiselect';
 
   return (
@@ -140,10 +144,11 @@ const DynamicFilterField: React.FC<Props> = ({ field, value, onChange }) => {
 const getDisplayValue = (
   field: CategoryField,
   value: string | string[] | number[] | undefined,
+  anyLabel: string = 'Any',
 ): string => {
-  if (!value) { return 'Any'; }
+  if (!value) { return anyLabel; }
   if (Array.isArray(value)) {
-    if (value.length === 0) { return 'Any'; }
+    if (value.length === 0) { return anyLabel; }
     if (typeof value[0] === 'number') {
       return `${value[0]} – ${value[1]}`;
     }

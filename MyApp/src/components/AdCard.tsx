@@ -30,9 +30,9 @@ const HeartIcon: React.FC<{ filled: boolean; size?: number }> = ({
 
 // ─── Elite Badge ──────────────────────────────────────────────────────────────
 
-const EliteBadge: React.FC = () => (
+const EliteBadge: React.FC<{ label: string }> = ({ label }) => (
   <View style={styles.eliteBadge}>
-    <Text style={styles.eliteBadgeText}>Elite</Text>
+    <Text style={styles.eliteBadgeText}>{label}</Text>
   </View>
 );
 
@@ -59,8 +59,9 @@ const AdCard: React.FC<AdCardProps> = ({
   const [isFav, setIsFav] = useState(ad.isFavorite ?? false);
 
   const imageUri = ad.images?.[0]?.thumbnail || ad.images?.[0]?.url || null;
-  const price = formatPrice(ad.price, ad.currency);
+  const price = formatPrice(ad.price, ad.currency, t);
   const time = formatTimestamp(ad.timestamp, t);
+  const eliteLabel = t('common.elite');
 
   const handleFav = () => {
     setIsFav(prev => !prev);
@@ -81,7 +82,7 @@ const AdCard: React.FC<AdCardProps> = ({
             style={[styles.horizontalImage, !imageUri && styles.imagePlaceholder]}
             resizeMode="cover"
           />
-          {ad.isElite && <EliteBadge />}
+          {ad.isElite && <EliteBadge label={eliteLabel} />}
           <TouchableOpacity style={styles.favButton} onPress={handleFav} hitSlop={8}>
             <HeartIcon filled={isFav} size={16} />
           </TouchableOpacity>
@@ -117,7 +118,7 @@ const AdCard: React.FC<AdCardProps> = ({
             style={[styles.verticalImage, !imageUri && styles.imagePlaceholder]}
             resizeMode="cover"
           />
-        {ad.isElite && <EliteBadge />}
+        {ad.isElite && <EliteBadge label={eliteLabel} />}
         <TouchableOpacity style={styles.favButton} onPress={handleFav} hitSlop={8}>
           <HeartIcon filled={isFav} size={18} />
         </TouchableOpacity>

@@ -9,6 +9,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  I18nManager,
 } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -74,9 +75,11 @@ const CloseIcon: React.FC = () => (
 );
 
 const ChevronRight: React.FC = () => (
-  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-    <Path d="M9 18l6-6-6-6" stroke={colors.textSecondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
+  <View style={I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}>
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 18l6-6-6-6" stroke={colors.textSecondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  </View>
 );
 
 // ─── Small reusable pieces ────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { FieldChoice } from '../../types';
 import { colors, typography, spacing } from '../../theme';
 
@@ -22,6 +23,7 @@ interface Props {
  * - Multi-select: tapping a chip toggles it; tapping "Any" clears all.
  */
 const ChipGroup: React.FC<Props> = ({ choices, selected, isMulti = false, onChange, wrap = false }) => {
+  const { t } = useTranslation();
   const selectedArr: string[] = Array.isArray(selected)
     ? selected
     : selected !== undefined
@@ -51,7 +53,7 @@ const ChipGroup: React.FC<Props> = ({ choices, selected, isMulti = false, onChan
         onPress={handleAny}
         activeOpacity={0.75}
       >
-        <Text style={[styles.chipText, isAnySelected && styles.chipTextActive]}>Any</Text>
+        <Text style={[styles.chipText, isAnySelected && styles.chipTextActive]}>{t('common.any')}</Text>
       </TouchableOpacity>
 
       {choices.map(choice => {

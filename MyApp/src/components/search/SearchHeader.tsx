@@ -4,6 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  I18nManager,
 } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { colors, typography, spacing } from '../../theme';
@@ -11,15 +12,17 @@ import { colors, typography, spacing } from '../../theme';
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 const BackArrow: React.FC = () => (
-  <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M19 12H5M5 12L12 19M5 12L12 5"
-      stroke={colors.textPrimary}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
+  <View style={I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}>
+    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M19 12H5M5 12L12 19M5 12L12 5"
+        stroke={colors.textPrimary}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  </View>
 );
 
 const SearchIcon: React.FC = () => (

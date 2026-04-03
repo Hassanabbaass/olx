@@ -3,10 +3,11 @@ type TFunc = (key: string, options?: object) => string;
 /**
  * Formats a price value with currency.
  * e.g. formatPrice(18850, 'USD') → 'USD 18,850'
+ * Pass a `t` function to get a localised "Price on request" fallback.
  */
-export const formatPrice = (price?: number, currency?: string): string => {
+export const formatPrice = (price?: number, currency?: string, t?: TFunc): string => {
   if (price === undefined || price === null) {
-    return 'Price on request';
+    return t ? t('common.priceOnRequest') : 'Price on request';
   }
   const formatted = price.toLocaleString('en-US');
   return `${currency ?? 'USD'} ${formatted}`;
